@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import React, { useState } from 'react';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, MapPin, Loader2 } from 'lucide-react';
@@ -35,29 +35,13 @@ const searchedLocationIcon = new L.Icon({
   shadowSize: [41, 41]
 });
 
-interface MapUpdaterProps {
-  center: [number, number];
-  zoom: number;
-}
-
-function MapUpdater({ center, zoom }: MapUpdaterProps) {
-  const map = useMap();
-  
-  useEffect(() => {
-    map.flyTo(center, zoom, {
-      duration: 1.5
-    });
-  }, [center, zoom, map]);
-  
-  return null;
-}
-
 const Map = () => {
   const [searchLocation, setSearchLocation] = useState('');
   const [mapCenter, setMapCenter] = useState<[number, number]>([12.9716, 77.5946]); // Bangalore
   const [mapZoom, setMapZoom] = useState(12);
   const [searchedMarker, setSearchedMarker] = useState<[number, number] | null>(null);
   const [isSearching, setIsSearching] = useState(false);
+  const [mapKey, setMapKey] = useState(0); // Key to force re-render of map
 
   // Sample tutor locations
   const tutorLocations = [
@@ -94,6 +78,7 @@ const Map = () => {
         setMapCenter([lat, lon]);
         setMapZoom(14);
         setSearchedMarker([lat, lon]);
+        setMapKey(prev => prev + 1); // Force map re-render
         
         toast({
           title: "Location found",
@@ -144,6 +129,7 @@ const Map = () => {
 
       {/* Map Container */}
       <MapContainer
+        key={mapKey}
         center={mapCenter}
         zoom={mapZoom}
         className="w-full h-full"
@@ -153,8 +139,6 @@ const Map = () => {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        
-        <MapUpdater center={mapCenter} zoom={mapZoom} />
         
         {/* Tutor Markers */}
         {tutorLocations.map((tutor, index) => (
