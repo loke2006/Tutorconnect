@@ -17,6 +17,8 @@ import Terms from "./pages/compliance/Terms";
 import Privacy from "./pages/compliance/Privacy";
 import RefundPolicy from "./pages/compliance/RefundPolicy";
 import RazorpayTerms from "./pages/compliance/RazorpayTerms";
+import FindTutors from "./pages/FindTutors";
+import BecomeTutor from "./pages/BecomeTutor";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +42,8 @@ const App = () => (
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/refund-policy" element={<RefundPolicy />} />
           <Route path="/razorpay-terms" element={<RazorpayTerms />} />
+          <Route path="/find-tutors" element={<FindTutors />} />
+          <Route path="/become-tutor" element={<BecomeTutor />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
