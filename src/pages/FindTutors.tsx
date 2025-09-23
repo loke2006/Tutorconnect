@@ -4,12 +4,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Search, Filter, Star, MapPin, Clock, BookOpen, Users, ChevronRight } from "lucide-react";
+import { Search, Filter, Star, MapPin, Clock, BookOpen, Users, ChevronRight, Map as MapIcon } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Link } from "react-router-dom";
+import Map from "@/components/Map";
+import { useState } from "react";
 
 const FindTutors = () => {
+  const [showMap, setShowMap] = useState(false);
   const tutors = [
     {
       id: 1,
@@ -182,9 +185,23 @@ const FindTutors = () => {
               <Button variant="outline">
                 Clear All
               </Button>
+              <Button 
+                variant={showMap ? "default" : "outline"}
+                onClick={() => setShowMap(!showMap)}
+              >
+                <MapIcon className="w-4 h-4 mr-2" />
+                {showMap ? "Hide Map" : "Show Map"}
+              </Button>
             </div>
           </CardContent>
         </Card>
+
+        {/* Map View */}
+        {showMap && (
+          <div className="mb-8">
+            <Map />
+          </div>
+        )}
 
         {/* Results Count */}
         <div className="flex justify-between items-center mb-6">

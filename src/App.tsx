@@ -19,6 +19,9 @@ import RefundPolicy from "./pages/compliance/RefundPolicy";
 import RazorpayTerms from "./pages/compliance/RazorpayTerms";
 import FindTutors from "./pages/FindTutors";
 import BecomeTutor from "./pages/BecomeTutor";
+import HowItWorks from "./pages/HowItWorks";
+import Pricing from "./pages/Pricing";
+import ChatBot from "@/components/ChatBot";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +31,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <ChatBot />
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/student-signup" element={<StudentSignup />} />
@@ -44,6 +48,8 @@ const App = () => (
           <Route path="/razorpay-terms" element={<RazorpayTerms />} />
           <Route path="/find-tutors" element={<FindTutors />} />
           <Route path="/become-tutor" element={<BecomeTutor />} />
+          <Route path="/how-it-works" element={<HowItWorks />} />
+          <Route path="/pricing" element={<Pricing />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
