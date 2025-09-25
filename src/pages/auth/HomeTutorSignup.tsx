@@ -8,7 +8,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { Home, ArrowLeft, Upload, Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
 
 const HomeTutorSignup = () => {
   const { toast } = useToast();
@@ -34,35 +33,24 @@ const HomeTutorSignup = () => {
     setLoading(true);
 
     try {
-      // Sign up the user
+      // Sign up the user - the trigger will automatically create tutor profile
       const { data: authData, error: authError } = await signUp(
         formData.email,
         formData.password,
         {
           full_name: `${formData.firstName} ${formData.lastName}`,
           phone: formData.phone,
-          role: 'tutor'
+          role: 'tutor',
+          tutor_type: 'home',
+          qualification: formData.qualification,
+          experience_years: formData.experience,
+          subjects: formData.subjects,
+          service_areas: formData.location,
+          bio: formData.bio
         }
       );
 
       if (authError) throw authError;
-
-      // Create tutor profile
-      if (authData?.user) {
-        const { error: tutorError } = await supabase
-          .from('tutors')
-          .insert({
-            user_id: authData.user.id,
-            tutor_type: 'home',
-            qualification: formData.qualification,
-            experience_years: parseInt(formData.experience),
-            subjects: formData.subjects.split(',').map(s => s.trim()),
-            service_areas: formData.location.split(',').map(s => s.trim()),
-            bio: formData.bio
-          });
-
-        if (tutorError) throw tutorError;
-      }
 
       toast({
         title: "Registration successful!",

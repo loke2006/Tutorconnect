@@ -7,7 +7,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { Users, ArrowLeft, Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
 
 const StudentSignup = () => {
   const { toast } = useToast();
@@ -30,32 +29,21 @@ const StudentSignup = () => {
     setLoading(true);
 
     try {
-      // Sign up the user
+      // Sign up the user - the trigger will automatically create student profile
       const { data: authData, error: authError } = await signUp(
         formData.email,
         formData.password,
         {
           full_name: formData.fullName,
           phone: formData.phone,
-          role: 'student'
+          role: 'student',
+          grade: formData.grade,
+          subjects: formData.subjects,
+          location: formData.location
         }
       );
 
       if (authError) throw authError;
-
-      // Create student profile
-      if (authData?.user) {
-        const { error: studentError } = await supabase
-          .from('students')
-          .insert({
-            user_id: authData.user.id,
-            grade: formData.grade,
-            subjects: formData.subjects.split(',').map(s => s.trim()),
-            location: formData.location
-          });
-
-        if (studentError) throw studentError;
-      }
 
       toast({
         title: "Registration successful!",

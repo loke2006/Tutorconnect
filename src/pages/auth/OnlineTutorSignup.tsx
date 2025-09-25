@@ -8,7 +8,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { BookOpen, ArrowLeft, Upload, Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
 
 const OnlineTutorSignup = () => {
   const { toast } = useToast();
@@ -36,37 +35,26 @@ const OnlineTutorSignup = () => {
     setLoading(true);
 
     try {
-      // Sign up the user
+      // Sign up the user - the trigger will automatically create tutor profile
       const { data: authData, error: authError } = await signUp(
         formData.email,
         formData.password,
         {
           full_name: `${formData.firstName} ${formData.lastName}`,
           phone: formData.phone,
-          role: 'tutor'
+          role: 'tutor',
+          tutor_type: 'online',
+          qualification: formData.qualification,
+          experience_years: formData.experience,
+          subjects: formData.subjects,
+          languages: formData.languages,
+          availability: formData.availability,
+          timezone: formData.timezone,
+          teaching_methodology: formData.methodology
         }
       );
 
       if (authError) throw authError;
-
-      // Create tutor profile
-      if (authData?.user) {
-        const { error: tutorError } = await supabase
-          .from('tutors')
-          .insert({
-            user_id: authData.user.id,
-            tutor_type: 'online',
-            qualification: formData.qualification,
-            experience_years: parseInt(formData.experience),
-            subjects: formData.subjects.split(',').map(s => s.trim()),
-            languages: formData.languages.split(',').map(s => s.trim()),
-            availability: formData.availability,
-            timezone: formData.timezone,
-            teaching_methodology: formData.methodology
-          });
-
-        if (tutorError) throw tutorError;
-      }
 
       toast({
         title: "Registration successful!",
