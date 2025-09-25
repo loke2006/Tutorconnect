@@ -5,15 +5,18 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link, useNavigate } from "react-router-dom";
-import { Home, ArrowLeft, Upload, Loader2 } from "lucide-react";
+import { Home, ArrowLeft, Upload, Loader2, AlertCircle } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { validatePassword, validateEmail } from "@/lib/validation";
 
 const HomeTutorSignup = () => {
   const { toast } = useToast();
   const { signUp } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [passwordErrors, setPasswordErrors] = useState<string[]>([]);
+  const [emailErrors, setEmailErrors] = useState<string[]>([]);
   
   const [formData, setFormData] = useState({
     firstName: "",
@@ -30,6 +33,17 @@ const HomeTutorSignup = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate email and password
+    const emailValidation = validateEmail(formData.email);
+    const passwordValidation = validatePassword(formData.password);
+    
+    setEmailErrors(emailValidation.errors);
+    setPasswordErrors(passwordValidation.errors);
+    
+    if (!emailValidation.valid || !passwordValidation.valid) {
+      return;
+    }
     setLoading(true);
 
     try {
@@ -118,8 +132,22 @@ const HomeTutorSignup = () => {
                 placeholder="tutor@example.com" 
                 required 
                 value={formData.email}
-                onChange={(e) => setFormData({...formData, email: e.target.value})}
+                onChange={(e) => {
+                  setFormData({...formData, email: e.target.value});
+                  setEmailErrors([]);
+                }}
+                className={emailErrors.length > 0 ? "border-destructive" : ""}
               />
+              {emailErrors.length > 0 && (
+                <div className="text-sm text-destructive mt-1">
+                  {emailErrors.map((error, index) => (
+                    <div key={index} className="flex items-center gap-1">
+                      <AlertCircle className="h-3 w-3" />
+                      {error}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
             
             <div>
@@ -129,10 +157,26 @@ const HomeTutorSignup = () => {
                 type="password" 
                 placeholder="Choose a strong password" 
                 required 
-                minLength={6}
                 value={formData.password}
-                onChange={(e) => setFormData({...formData, password: e.target.value})}
+                onChange={(e) => {
+                  setFormData({...formData, password: e.target.value});
+                  setPasswordErrors([]);
+                }}
+                className={passwordErrors.length > 0 ? "border-destructive" : ""}
               />
+              {passwordErrors.length > 0 && (
+                <div className="text-sm text-destructive mt-1">
+                  {passwordErrors.map((error, index) => (
+                    <div key={index} className="flex items-center gap-1">
+                      <AlertCircle className="h-3 w-3" />
+                      {error}
+                    </div>
+                  ))}
+                </div>
+              )}
+              <p className="text-xs text-muted-foreground mt-1">
+                Password must be at least 8 characters with uppercase, lowercase, number and special character
+              </p>
             </div>
             
             <div>
