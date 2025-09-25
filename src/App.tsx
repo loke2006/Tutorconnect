@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import StudentSignup from "./pages/auth/StudentSignup";
@@ -31,28 +32,30 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <ChatBot />
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/student-signup" element={<StudentSignup />} />
-          <Route path="/home-tutor-signup" element={<HomeTutorSignup />} />
-          <Route path="/online-tutor-signup" element={<OnlineTutorSignup />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/admin-login" element={<AdminLogin />} />
-          <Route path="/student-dashboard" element={<StudentDashboard />} />
-          <Route path="/tutor-dashboard" element={<TutorDashboard />} />
-          <Route path="/admin-dashboard" element={<AdminDashboard />} />
-          <Route path="/terms" element={<Terms />} />
-          <Route path="/privacy" element={<Privacy />} />
-          <Route path="/refund-policy" element={<RefundPolicy />} />
-          <Route path="/razorpay-terms" element={<RazorpayTerms />} />
-          <Route path="/find-tutors" element={<FindTutors />} />
-          <Route path="/become-tutor" element={<BecomeTutor />} />
-          <Route path="/how-it-works" element={<HowItWorks />} />
-          <Route path="/pricing" element={<Pricing />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <AuthProvider>
+          <ChatBot />
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/student-signup" element={<StudentSignup />} />
+            <Route path="/home-tutor-signup" element={<HomeTutorSignup />} />
+            <Route path="/online-tutor-signup" element={<OnlineTutorSignup />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/admin-login" element={<AdminLogin />} />
+            <Route path="/student-dashboard" element={<StudentDashboard />} />
+            <Route path="/tutor-dashboard" element={<TutorDashboard />} />
+            <Route path="/admin-dashboard" element={<AdminDashboard />} />
+            <Route path="/terms" element={<Terms />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/refund-policy" element={<RefundPolicy />} />
+            <Route path="/razorpay-terms" element={<RazorpayTerms />} />
+            <Route path="/find-tutors" element={<FindTutors />} />
+            <Route path="/become-tutor" element={<BecomeTutor />} />
+            <Route path="/how-it-works" element={<HowItWorks />} />
+            <Route path="/pricing" element={<Pricing />} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

@@ -1,20 +1,55 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Link } from "react-router-dom";
-import { ArrowLeft, LogIn } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { ArrowLeft, LogIn, Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Login = () => {
   const { toast } = useToast();
+  const { signIn } = useAuth();
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  
+  const [emailForm, setEmailForm] = useState({
+    email: "",
+    password: ""
+  });
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleEmailLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const { data, error } = await signIn(emailForm.email, emailForm.password);
+      
+      if (error) throw error;
+
+      toast({
+        title: "Login successful!",
+        description: "Redirecting to your dashboard...",
+      });
+      
+    } catch (error: any) {
+      toast({
+        title: "Login failed",
+        description: error.message || "Please check your credentials and try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePhoneLogin = (e: React.FormEvent) => {
     e.preventDefault();
     toast({
-      title: "Supabase Integration Required",
-      description: "Please connect Supabase to enable authentication.",
+      title: "Phone login coming soon",
+      description: "Please use email login for now.",
     });
   };
 
@@ -42,14 +77,28 @@ const Login = () => {
             </TabsList>
             
             <TabsContent value="email">
-              <form onSubmit={handleLogin} className="space-y-4">
+              <form onSubmit={handleEmailLogin} className="space-y-4">
                 <div>
                   <Label htmlFor="email">Email Address</Label>
-                  <Input id="email" type="email" placeholder="user@example.com" required />
+                  <Input 
+                    id="email" 
+                    type="email" 
+                    placeholder="user@example.com" 
+                    required 
+                    value={emailForm.email}
+                    onChange={(e) => setEmailForm({...emailForm, email: e.target.value})}
+                  />
                 </div>
                 <div>
                   <Label htmlFor="password">Password</Label>
-                  <Input id="password" type="password" placeholder="Enter your password" required />
+                  <Input 
+                    id="password" 
+                    type="password" 
+                    placeholder="Enter your password" 
+                    required 
+                    value={emailForm.password}
+                    onChange={(e) => setEmailForm({...emailForm, password: e.target.value})}
+                  />
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -60,14 +109,26 @@ const Login = () => {
                     Forgot password?
                   </Link>
                 </div>
-                <Button type="submit" variant="gradient" className="w-full">
-                  Login with Email
+                <Button 
+                  type="submit" 
+                  variant="gradient" 
+                  className="w-full" 
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Logging in...
+                    </>
+                  ) : (
+                    "Login with Email"
+                  )}
                 </Button>
               </form>
             </TabsContent>
             
             <TabsContent value="phone">
-              <form onSubmit={handleLogin} className="space-y-4">
+              <form onSubmit={handlePhoneLogin} className="space-y-4">
                 <div>
                   <Label htmlFor="phone">Mobile Number</Label>
                   <Input id="phone" type="tel" placeholder="+91 98765 43210" required />

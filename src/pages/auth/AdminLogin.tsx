@@ -1,20 +1,54 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Link } from "react-router-dom";
-import { Shield, ArrowLeft, Lock } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { Shield, ArrowLeft, Lock, Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 const AdminLogin = () => {
   const { toast } = useToast();
+  const { signIn } = useAuth();
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+    securityCode: ""
+  });
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast({
-      title: "Supabase Integration Required",
-      description: "Please connect Supabase to enable admin authentication.",
-    });
+    setLoading(true);
+
+    try {
+      // For admin login, we'll check the security code on the frontend
+      // In production, this should be verified on the backend
+      if (formData.securityCode !== "123456") {
+        throw new Error("Invalid security code");
+      }
+
+      const { data, error } = await signIn(formData.email, formData.password);
+      
+      if (error) throw error;
+
+      toast({
+        title: "Admin login successful!",
+        description: "Redirecting to admin dashboard...",
+      });
+      
+    } catch (error: any) {
+      toast({
+        title: "Admin login failed",
+        description: error.message || "Please check your credentials and try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -42,6 +76,8 @@ const AdminLogin = () => {
                 type="email" 
                 placeholder="admin@educonnect.in" 
                 required 
+                value={formData.email}
+                onChange={(e) => setFormData({...formData, email: e.target.value})}
               />
             </div>
             <div>
@@ -51,6 +87,8 @@ const AdminLogin = () => {
                 type="password" 
                 placeholder="Enter admin password" 
                 required 
+                value={formData.password}
+                onChange={(e) => setFormData({...formData, password: e.target.value})}
               />
             </div>
             <div>
@@ -61,9 +99,11 @@ const AdminLogin = () => {
                 placeholder="Enter 6-digit security code" 
                 maxLength={6}
                 required 
+                value={formData.securityCode}
+                onChange={(e) => setFormData({...formData, securityCode: e.target.value})}
               />
               <p className="text-xs text-muted-foreground mt-1">
-                Contact system administrator if you don't have the security code
+                For testing: Use security code <strong>123456</strong>
               </p>
             </div>
             
@@ -77,8 +117,20 @@ const AdminLogin = () => {
               </div>
             </div>
             
-            <Button type="submit" variant="gradient" className="w-full">
-              Access Admin Dashboard
+            <Button 
+              type="submit" 
+              variant="gradient" 
+              className="w-full" 
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Verifying credentials...
+                </>
+              ) : (
+                "Access Admin Dashboard"
+              )}
             </Button>
           </form>
           
