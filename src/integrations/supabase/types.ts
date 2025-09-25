@@ -14,7 +14,174 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      admins: {
+        Row: {
+          created_at: string
+          id: string
+          permissions: string[] | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          permissions?: string[] | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          permissions?: string[] | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admins_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string
+          full_name: string | null
+          id: string
+          phone: string | null
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          full_name?: string | null
+          id: string
+          phone?: string | null
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          role?: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      students: {
+        Row: {
+          created_at: string
+          free_trial_used: boolean | null
+          grade: string | null
+          id: string
+          location: string | null
+          subjects: string[] | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          free_trial_used?: boolean | null
+          grade?: string | null
+          id?: string
+          location?: string | null
+          subjects?: string[] | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          free_trial_used?: boolean | null
+          grade?: string | null
+          id?: string
+          location?: string | null
+          subjects?: string[] | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "students_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tutors: {
+        Row: {
+          availability: string | null
+          bio: string | null
+          created_at: string
+          documents_url: string[] | null
+          experience_years: number | null
+          hourly_rate: number | null
+          id: string
+          is_verified: boolean | null
+          languages: string[] | null
+          qualification: string | null
+          rating: number | null
+          service_areas: string[] | null
+          subjects: string[] | null
+          teaching_methodology: string | null
+          timezone: string | null
+          total_students: number | null
+          tutor_type: Database["public"]["Enums"]["tutor_type"]
+          user_id: string
+        }
+        Insert: {
+          availability?: string | null
+          bio?: string | null
+          created_at?: string
+          documents_url?: string[] | null
+          experience_years?: number | null
+          hourly_rate?: number | null
+          id?: string
+          is_verified?: boolean | null
+          languages?: string[] | null
+          qualification?: string | null
+          rating?: number | null
+          service_areas?: string[] | null
+          subjects?: string[] | null
+          teaching_methodology?: string | null
+          timezone?: string | null
+          total_students?: number | null
+          tutor_type: Database["public"]["Enums"]["tutor_type"]
+          user_id: string
+        }
+        Update: {
+          availability?: string | null
+          bio?: string | null
+          created_at?: string
+          documents_url?: string[] | null
+          experience_years?: number | null
+          hourly_rate?: number | null
+          id?: string
+          is_verified?: boolean | null
+          languages?: string[] | null
+          qualification?: string | null
+          rating?: number | null
+          service_areas?: string[] | null
+          subjects?: string[] | null
+          teaching_methodology?: string | null
+          timezone?: string | null
+          total_students?: number | null
+          tutor_type?: Database["public"]["Enums"]["tutor_type"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tutors_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +190,8 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      app_role: "student" | "tutor" | "admin"
+      tutor_type: "home" | "online"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +318,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["student", "tutor", "admin"],
+      tutor_type: ["home", "online"],
+    },
   },
 } as const
