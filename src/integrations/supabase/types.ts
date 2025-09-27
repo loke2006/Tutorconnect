@@ -43,6 +43,84 @@ export type Database = {
           },
         ]
       }
+      bookings: {
+        Row: {
+          created_at: string
+          date: string
+          duration_hours: number
+          id: string
+          notes: string | null
+          status: string
+          student_id: string
+          subject: string
+          time_slot: string
+          total_price: number
+          tutor_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          duration_hours?: number
+          id?: string
+          notes?: string | null
+          status?: string
+          student_id: string
+          subject: string
+          time_slot: string
+          total_price: number
+          tutor_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          duration_hours?: number
+          id?: string
+          notes?: string | null
+          status?: string
+          student_id?: string
+          subject?: string
+          time_slot?: string
+          total_price?: number
+          tutor_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          data: Json | null
+          id: string
+          is_read: boolean
+          message: string
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+          is_read?: boolean
+          message: string
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+          is_read?: boolean
+          message?: string
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -70,6 +148,36 @@ export type Database = {
           phone?: string | null
           role?: Database["public"]["Enums"]["app_role"]
           updated_at?: string
+        }
+        Relationships: []
+      }
+      schedules: {
+        Row: {
+          created_at: string
+          day_of_week: number
+          end_time: string
+          id: string
+          is_available: boolean
+          start_time: string
+          tutor_id: string
+        }
+        Insert: {
+          created_at?: string
+          day_of_week: number
+          end_time: string
+          id?: string
+          is_available?: boolean
+          start_time: string
+          tutor_id: string
+        }
+        Update: {
+          created_at?: string
+          day_of_week?: number
+          end_time?: string
+          id?: string
+          is_available?: boolean
+          start_time?: string
+          tutor_id?: string
         }
         Relationships: []
       }
