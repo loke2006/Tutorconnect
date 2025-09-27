@@ -1,8 +1,9 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import Map from '@/components/Map';
+import TutorList from '@/components/TutorList';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
@@ -11,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Slider } from '@/components/ui/slider';
 import { Star, MapPin, Clock, Users, Filter, Map as MapIcon, Grid, ChevronRight, BookOpen, Video, Home } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const FindTutors = () => {
   const navigate = useNavigate();
@@ -295,7 +297,7 @@ const FindTutors = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      
+      <div className="pt-16"> {/* Add padding for fixed navbar */}
       {/* Hero Section */}
       <section className="bg-gradient-to-b from-primary/5 to-background py-12">
         <div className="container mx-auto px-4">
@@ -505,7 +507,7 @@ const FindTutors = () => {
           </Button>
         </div>
       </section>
-
+      </div> {/* Close pt-16 div */}
       <Footer />
     </div>
   );

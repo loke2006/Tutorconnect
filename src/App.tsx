@@ -22,6 +22,7 @@ import FindTutors from "./pages/FindTutors";
 import BecomeTutor from "./pages/BecomeTutor";
 import HowItWorks from "./pages/HowItWorks";
 import Pricing from "./pages/Pricing";
+import BookingPage from "./pages/BookingPage";
 import ChatBot from "@/components/ChatBot";
 
 const queryClient = new QueryClient();
@@ -52,6 +53,7 @@ const App = () => (
             <Route path="/become-tutor" element={<BecomeTutor />} />
             <Route path="/how-it-works" element={<HowItWorks />} />
             <Route path="/pricing" element={<Pricing />} />
+            <Route path="/book-tutor/:tutorId" element={<BookingPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

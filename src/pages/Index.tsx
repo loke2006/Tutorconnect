@@ -1,8 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { Users, BookOpen, Home, Shield, Check, ArrowRight } from "lucide-react";
+import { Users, BookOpen, Home, Shield, Check, ArrowRight, Award, TrendingUp, Zap, Star } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { Card } from "@/components/ui/card";
 
 const Index = () => {
   return (
@@ -19,12 +20,16 @@ const Index = () => {
             Connect with verified home tutors and online educators for personalized learning
           </p>
           <div className="flex gap-4 justify-center mb-4">
-            <Button variant="hero" size="xl">
-              Get Started - First 3 Months Free
-            </Button>
-            <Button variant="outline" size="xl">
-              Learn More
-            </Button>
+            <Link to="/find-tutors">
+              <Button variant="hero" size="xl">
+                Get Started - First 3 Months Free
+              </Button>
+            </Link>
+            <Link to="/how-it-works">
+              <Button variant="outline" size="xl">
+                Learn More
+              </Button>
+            </Link>
           </div>
           <p className="text-sm text-muted-foreground">
             ✓ OTP Verified Users ✓ Document Verification ✓ Secure Platform
@@ -159,6 +164,97 @@ const Index = () => {
             </div>
             <h3 className="font-semibold mb-2">Free Trial</h3>
             <p className="text-sm text-muted-foreground">First 3 months absolutely free</p>
+          </div>
+        </div>
+      </section>
+
+      {/* Stats Section */}
+      <section className="container mx-auto px-4 py-16">
+        <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+          <Card className="text-center p-8 bg-gradient-to-br from-primary/5 to-primary/10">
+            <TrendingUp className="w-12 h-12 text-primary mx-auto mb-4" />
+            <h3 className="text-4xl font-bold mb-2">10,000+</h3>
+            <p className="text-muted-foreground">Active Students</p>
+          </Card>
+          <Card className="text-center p-8 bg-gradient-to-br from-secondary/5 to-secondary/10">
+            <Award className="w-12 h-12 text-secondary mx-auto mb-4" />
+            <h3 className="text-4xl font-bold mb-2">2,500+</h3>
+            <p className="text-muted-foreground">Verified Tutors</p>
+          </Card>
+          <Card className="text-center p-8 bg-gradient-to-br from-accent/5 to-accent/10">
+            <Star className="w-12 h-12 text-accent mx-auto mb-4" />
+            <h3 className="text-4xl font-bold mb-2">4.8/5</h3>
+            <p className="text-muted-foreground">Average Rating</p>
+          </Card>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="container mx-auto px-4 py-16 bg-muted/30">
+        <h2 className="text-3xl font-bold text-center mb-12">What Our Users Say</h2>
+        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          <Card className="p-6">
+            <div className="flex items-center gap-2 mb-4">
+              {[...Array(5)].map((_, i) => (
+                <Star key={i} className="w-4 h-4 fill-primary text-primary" />
+              ))}
+            </div>
+            <p className="text-muted-foreground mb-4">
+              "Found an amazing math tutor within a day. The verification process gave me confidence in the platform."
+            </p>
+            <div className="flex items-center gap-3">
+              <img 
+                src="https://api.dicebear.com/7.x/avataaars/svg?seed=Student1" 
+                alt="Student" 
+                className="w-10 h-10 rounded-full"
+              />
+              <div>
+                <p className="font-semibold">Anjali Reddy</p>
+                <p className="text-sm text-muted-foreground">Student, Class 10</p>
+              </div>
+            </div>
+          </Card>
+          <Card className="p-6">
+            <div className="flex items-center gap-2 mb-4">
+              {[...Array(5)].map((_, i) => (
+                <Star key={i} className="w-4 h-4 fill-primary text-primary" />
+              ))}
+            </div>
+            <p className="text-muted-foreground mb-4">
+              "The platform helped me connect with serious students. The scheduling tools are fantastic!"
+            </p>
+            <div className="flex items-center gap-3">
+              <img 
+                src="https://api.dicebear.com/7.x/avataaars/svg?seed=Tutor1" 
+                alt="Tutor" 
+                className="w-10 h-10 rounded-full"
+              />
+              <div>
+                <p className="font-semibold">Rahul Verma</p>
+                <p className="text-sm text-muted-foreground">Physics Tutor</p>
+              </div>
+            </div>
+          </Card>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="container mx-auto px-4 py-20">
+        <div className="bg-gradient-to-r from-primary to-primary-glow rounded-2xl p-12 text-center text-primary-foreground">
+          <Zap className="w-16 h-16 mx-auto mb-6" />
+          <h2 className="text-3xl font-bold mb-4">Ready to Start Learning?</h2>
+          <p className="text-xl mb-8 opacity-90">Join thousands of students and tutors on our platform</p>
+          <div className="flex gap-4 justify-center">
+            <Link to="/student-signup">
+              <Button size="lg" variant="secondary">
+                Sign Up as Student
+              </Button>
+            </Link>
+            <Link to="/become-tutor">
+              <Button size="lg" variant="outline" className="bg-white/10 hover:bg-white/20 text-white border-white">
+                Become a Tutor
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
