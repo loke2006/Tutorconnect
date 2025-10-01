@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -5,8 +6,197 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Calendar, Clock, BookOpen, Users, Search, Bell, Settings, LogOut, Star, ChevronRight } from "lucide-react";
 import Navbar from "@/components/Navbar";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
+import TutorList from "@/components/TutorList";
 
 const StudentDashboard = () => {
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+  const [studentData, setStudentData] = useState<any>(null);
+  const [bookings, setBookings] = useState<any[]>([]);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [myTutors, setMyTutors] = useState<any[]>([]);
+  const [stats, setStats] = useState({
+    activeTutors: 0,
+    weeklyClasses: 0,
+    totalHours: 0,
+    freeTrialDays: 0
+  });
+
+  useEffect(() => {
+    if (user) {
+      fetchStudentData();
+      fetchBookings();
+      fetchNotifications();
+      fetchStats();
+      subscribeToUpdates();
+    }
+  }, [user]);
+
+  const fetchStudentData = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('students')
+        .select('*, profiles!students_user_id_fkey(*)')
+        .eq('user_id', user?.id)
+        .single();
+
+      if (error) throw error;
+      setStudentData(data);
+      
+      // Calculate free trial days remaining
+      if (data?.created_at) {
+        const createdDate = new Date(data.created_at);
+        const now = new Date();
+        const daysPassed = Math.floor((now.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24));
+        const remainingDays = Math.max(0, 90 - daysPassed);
+        setStats(prev => ({ ...prev, freeTrialDays: remainingDays }));
+      }
+    } catch (error) {
+      console.error('Error fetching student data:', error);
+    }
+  };
+
+  const fetchBookings = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('bookings')
+        .select(`
+          *,
+          tutors!bookings_tutor_id_fkey (
+            *,
+            profiles!tutors_user_id_fkey (*)
+          )
+        `)
+        .eq('student_id', user?.id)
+        .order('date', { ascending: true });
+
+      if (error) throw error;
+      setBookings(data || []);
+      
+      // Calculate stats
+      const uniqueTutors = new Set(data?.filter(b => b.status === 'confirmed').map(b => b.tutor_id));
+      const weeklyClasses = data?.filter(b => {
+        const bookingDate = new Date(b.date);
+        const now = new Date();
+        const weekStart = new Date(now.setDate(now.getDate() - now.getDay()));
+        const weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekEnd.getDate() + 7);
+        return bookingDate >= weekStart && bookingDate < weekEnd && b.status === 'confirmed';
+      }).length || 0;
+      
+      const totalHours = data?.filter(b => b.status === 'completed')
+        .reduce((acc, b) => acc + Number(b.duration_hours), 0) || 0;
+
+      setStats(prev => ({
+        ...prev,
+        activeTutors: uniqueTutors.size,
+        weeklyClasses,
+        totalHours
+      }));
+
+      // Set my tutors
+      const tutorsMap = new Map();
+      data?.forEach(booking => {
+        if (booking.tutors && booking.status === 'confirmed') {
+          tutorsMap.set(booking.tutor_id, booking.tutors);
+        }
+      });
+      setMyTutors(Array.from(tutorsMap.values()));
+    } catch (error) {
+      console.error('Error fetching bookings:', error);
+    }
+  };
+
+  const fetchNotifications = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('notifications')
+        .select('*')
+        .eq('user_id', user?.id)
+        .eq('is_read', false)
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      if (error) throw error;
+      setNotifications(data || []);
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+    }
+  };
+
+  const fetchStats = async () => {
+    // Stats are calculated in fetchBookings
+  };
+
+  const subscribeToUpdates = () => {
+    const bookingsChannel = supabase
+      .channel('student-bookings')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'bookings',
+        filter: `student_id=eq.${user?.id}`
+      }, () => {
+        fetchBookings();
+      })
+      .subscribe();
+
+    const notificationsChannel = supabase
+      .channel('student-notifications')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'notifications',
+        filter: `user_id=eq.${user?.id}`
+      }, () => {
+        fetchNotifications();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(bookingsChannel);
+      supabase.removeChannel(notificationsChannel);
+    };
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
+  };
+
+  const markNotificationRead = async (id: string) => {
+    try {
+      await supabase
+        .from('notifications')
+        .update({ is_read: true })
+        .eq('id', id);
+      
+      fetchNotifications();
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+    }
+  };
+
+  const getUpcomingClasses = () => {
+    const now = new Date();
+    return bookings
+      .filter(b => new Date(b.date) >= now && b.status === 'confirmed')
+      .slice(0, 2);
+  };
+
+  const getRecentActivities = () => {
+    return bookings
+      .filter(b => b.status === 'completed')
+      .slice(0, 3)
+      .map(b => ({
+        title: `Completed ${b.subject} class with ${b.tutors?.profiles?.full_name || 'Tutor'}`,
+        time: new Date(b.date).toLocaleString()
+      }));
+  };
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -14,17 +204,22 @@ const StudentDashboard = () => {
       <div className="container mx-auto px-4 pt-20 pb-8">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold">Welcome back, Student!</h1>
+            <h1 className="text-3xl font-bold">
+              Welcome back, {studentData?.profiles?.full_name || 'Student'}!
+            </h1>
             <p className="text-muted-foreground">Manage your learning journey</p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" size="icon">
+            <Button variant="outline" size="icon" className="relative">
               <Bell className="w-4 h-4" />
+              {notifications.length > 0 && (
+                <span className="absolute -top-1 -right-1 w-3 h-3 bg-destructive rounded-full" />
+              )}
             </Button>
             <Button variant="outline" size="icon">
               <Settings className="w-4 h-4" />
             </Button>
-            <Button variant="outline" size="icon">
+            <Button variant="outline" size="icon" onClick={handleSignOut}>
               <LogOut className="w-4 h-4" />
             </Button>
           </div>
@@ -37,7 +232,7 @@ const StudentDashboard = () => {
               <CardTitle className="text-sm font-medium">Active Tutors</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">3</div>
+              <div className="text-2xl font-bold">{stats.activeTutors}</div>
               <p className="text-xs text-muted-foreground">Currently enrolled</p>
             </CardContent>
           </Card>
@@ -46,8 +241,8 @@ const StudentDashboard = () => {
               <CardTitle className="text-sm font-medium">Classes This Week</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">8</div>
-              <p className="text-xs text-muted-foreground">4 completed, 4 upcoming</p>
+              <div className="text-2xl font-bold">{stats.weeklyClasses}</div>
+              <p className="text-xs text-muted-foreground">Scheduled classes</p>
             </CardContent>
           </Card>
           <Card>
@@ -55,7 +250,7 @@ const StudentDashboard = () => {
               <CardTitle className="text-sm font-medium">Total Hours</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">124</div>
+              <div className="text-2xl font-bold">{stats.totalHours}</div>
               <p className="text-xs text-muted-foreground">Learning time</p>
             </CardContent>
           </Card>
@@ -64,7 +259,7 @@ const StudentDashboard = () => {
               <CardTitle className="text-sm font-medium">Free Trial</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">72</div>
+              <div className="text-2xl font-bold">{stats.freeTrialDays}</div>
               <p className="text-xs text-muted-foreground">Days remaining</p>
             </CardContent>
           </Card>
@@ -90,20 +285,23 @@ const StudentDashboard = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <div className="flex justify-between items-center p-3 bg-muted rounded-lg">
-                    <div>
-                      <p className="font-medium">Mathematics - Calculus</p>
-                      <p className="text-sm text-muted-foreground">Mr. Sharma • Today, 4:00 PM</p>
-                    </div>
-                    <Button size="sm">Join</Button>
-                  </div>
-                  <div className="flex justify-between items-center p-3 bg-muted rounded-lg">
-                    <div>
-                      <p className="font-medium">Physics - Mechanics</p>
-                      <p className="text-sm text-muted-foreground">Ms. Patel • Tomorrow, 5:00 PM</p>
-                    </div>
-                    <Button size="sm" variant="outline">View</Button>
-                  </div>
+                  {getUpcomingClasses().length > 0 ? (
+                    getUpcomingClasses().map((booking) => (
+                      <div key={booking.id} className="flex justify-between items-center p-3 bg-muted rounded-lg">
+                        <div>
+                          <p className="font-medium">{booking.subject}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {booking.tutors?.profiles?.full_name || 'Tutor'} • {new Date(booking.date).toLocaleDateString()} at {booking.time_slot}
+                          </p>
+                        </div>
+                        <Button size="sm" variant={new Date(booking.date).toDateString() === new Date().toDateString() ? 'default' : 'outline'}>
+                          {new Date(booking.date).toDateString() === new Date().toDateString() ? 'Join' : 'View'}
+                        </Button>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-sm text-muted-foreground text-center py-4">No upcoming classes</p>
+                  )}
                 </CardContent>
               </Card>
 
@@ -116,20 +314,19 @@ const StudentDashboard = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-2 h-2 bg-success rounded-full"></div>
-                    <div className="flex-1">
-                      <p className="text-sm">Completed Chemistry class with Dr. Kumar</p>
-                      <p className="text-xs text-muted-foreground">2 hours ago</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-2 h-2 bg-primary rounded-full"></div>
-                    <div className="flex-1">
-                      <p className="text-sm">Booked new session with Mr. Sharma</p>
-                      <p className="text-xs text-muted-foreground">Yesterday</p>
-                    </div>
-                  </div>
+                  {getRecentActivities().length > 0 ? (
+                    getRecentActivities().map((activity, index) => (
+                      <div key={index} className="flex items-center gap-3">
+                        <div className="w-2 h-2 bg-success rounded-full"></div>
+                        <div className="flex-1">
+                          <p className="text-sm">{activity.title}</p>
+                          <p className="text-xs text-muted-foreground">{activity.time}</p>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-sm text-muted-foreground text-center py-4">No recent activities</p>
+                  )}
                 </CardContent>
               </Card>
             </div>
@@ -156,20 +353,28 @@ const StudentDashboard = () => {
                 <CardDescription>Tutors you're currently learning with</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                      <Users className="w-6 h-6 text-primary" />
+                {myTutors.length > 0 ? (
+                  myTutors.map((tutor) => (
+                    <div key={tutor.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                          <Users className="w-6 h-6 text-primary" />
+                        </div>
+                        <div>
+                          <p className="font-medium">{tutor.profiles?.full_name || 'Tutor'}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {tutor.subjects?.join(', ') || 'Multiple subjects'} • {tutor.rating || 0} ⭐
+                          </p>
+                        </div>
+                      </div>
+                      <Button variant="outline" size="sm" onClick={() => navigate(`/book-tutor/${tutor.id}`)}>
+                        Book Session
+                      </Button>
                     </div>
-                    <div>
-                      <p className="font-medium">Mr. Rajesh Sharma</p>
-                      <p className="text-sm text-muted-foreground">Mathematics • 4.8 ⭐</p>
-                    </div>
-                  </div>
-                  <Button variant="outline" size="sm">
-                    View Profile
-                  </Button>
-                </div>
+                  ))
+                ) : (
+                  <p className="text-center text-muted-foreground py-4">No enrolled tutors yet</p>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -181,16 +386,7 @@ const StudentDashboard = () => {
                 <CardDescription>Browse and book sessions with verified tutors</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="flex gap-2 mb-4">
-                  <Input placeholder="Search by subject or tutor name..." className="flex-1" />
-                  <Button>
-                    <Search className="w-4 h-4 mr-2" />
-                    Search
-                  </Button>
-                </div>
-                <div className="text-center text-muted-foreground py-8">
-                  Tutor search results will appear here after Supabase integration
-                </div>
+                <TutorList />
               </CardContent>
             </Card>
           </TabsContent>
