@@ -83,12 +83,16 @@ const Navbar = () => {
             <Link to="/how-it-works" className="text-muted-foreground hover:text-foreground transition-colors">
               How it Works
             </Link>
-            <Link to="/find-tutors" className="text-muted-foreground hover:text-foreground transition-colors">
-              Find Tutors
-            </Link>
-            <Link to="/become-tutor" className="text-muted-foreground hover:text-foreground transition-colors">
-              Become a Tutor
-            </Link>
+            {userProfile?.role !== 'tutor' && (
+              <Link to="/find-tutors" className="text-muted-foreground hover:text-foreground transition-colors">
+                Find Tutors
+              </Link>
+            )}
+            {userProfile?.role !== 'student' && userProfile?.role !== 'tutor' && (
+              <Link to="/become-tutor" className="text-muted-foreground hover:text-foreground transition-colors">
+                Become a Tutor
+              </Link>
+            )}
             <Link to="/pricing" className="text-muted-foreground hover:text-foreground transition-colors">
               Pricing
             </Link>
@@ -165,12 +169,16 @@ const Navbar = () => {
               <Link to="/how-it-works" className="text-muted-foreground hover:text-foreground transition-colors">
                 How it Works
               </Link>
-              <Link to="/find-tutors" className="text-muted-foreground hover:text-foreground transition-colors">
-                Find Tutors
-              </Link>
-              <Link to="/become-tutor" className="text-muted-foreground hover:text-foreground transition-colors">
-                Become a Tutor
-              </Link>
+              {userProfile?.role !== 'tutor' && (
+                <Link to="/find-tutors" className="text-muted-foreground hover:text-foreground transition-colors">
+                  Find Tutors
+                </Link>
+              )}
+              {userProfile?.role !== 'student' && userProfile?.role !== 'tutor' && (
+                <Link to="/become-tutor" className="text-muted-foreground hover:text-foreground transition-colors">
+                  Become a Tutor
+                </Link>
+              )}
               <Link to="/pricing" className="text-muted-foreground hover:text-foreground transition-colors">
                 Pricing
               </Link>
