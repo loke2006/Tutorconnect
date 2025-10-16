@@ -11,6 +11,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import TutorList from "@/components/TutorList";
+import BookingPlanner from "@/components/BookingPlanner";
 
 const StudentDashboard = () => {
   const { user, signOut } = useAuth();
@@ -333,17 +334,7 @@ const StudentDashboard = () => {
           </TabsContent>
 
           <TabsContent value="schedule" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Weekly Schedule</CardTitle>
-                <CardDescription>Your upcoming classes for this week</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center text-muted-foreground py-8">
-                  Schedule calendar will be displayed here after Supabase integration
-                </div>
-              </CardContent>
-            </Card>
+            <BookingPlanner bookings={bookings} />
           </TabsContent>
 
           <TabsContent value="tutors" className="space-y-4">
