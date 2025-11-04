@@ -71,8 +71,7 @@ const FindTutors = () => {
             full_name,
             email
           )
-        `)
-        .eq('is_verified', true);
+        `);
 
       if (error) throw error;
       setTutors(data || []);
